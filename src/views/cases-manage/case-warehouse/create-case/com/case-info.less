@@ -1,0 +1,160 @@
+
+.case-btns {
+  margin-bottom: 10px !important;
+}
+/deep/ .ivu-form-item-label {
+  font-family: PingFangSC-Regular;
+  font-size: 16px !important;
+  color: #474c63 !important;
+  letter-spacing: 0.93px !important;
+  text-align: right;
+}
+/deep/ .ivu-form-item-content {
+  text-align: left;
+}
+/deep/ .ivu-input,
+/deep/ .ivu-input-number,
+/deep/ .ivu-radio-wrapper,
+/deep/ .ivu-checkbox-wrapper {
+  border-radius: 4px !important;
+  font-family: PingFangSC-Regular !important;
+  font-size: 16px !important;
+  color: #474c63 !important;
+  letter-spacing: 0.93px !important;
+}
+/deep/ .ivu-select-placeholder {
+  font-family: PingFangSC-Regular;
+  font-size: 16px !important;
+  color: #9397ad;
+  letter-spacing: 0.93px;
+}
+/deep/ .ivu-radio-inner,
+/deep/ .ivu-checkbox-inner {
+  width: 16px;
+  height: 16px;
+}
+/deep/ .ivu-radio-inner:after {
+  left: 2px;
+  top: 2px;
+}
+/deep/ .ivu-checkbox-inner:after {
+  left: 5px;
+  top: 3px;
+}
+/deep/ .ivu-radio-wrapper,
+/deep/ .ivu-checkbox-wrapper {
+  margin-right: 30px;
+}
+/deep/ .ivu-input-number-handler-wrap {
+  display: none;
+}
+/deep/ .ivu-form-item-error-tip {
+  left: 90px;
+}
+/deep/ textarea.ivu-input {
+  height: 110px;
+}
+.case-form {
+  width: 760px;
+  position: relative;
+  padding-bottom: 80px;
+  .case-title {
+    font-family: PingFangSC-Regular;
+    font-size: 24px;
+    color: #a4a9c0;
+    letter-spacing: 1.4px;
+    text-align: center;
+    position: relative;
+    padding-bottom: 20px;
+  }
+  .case-name {
+    /deep/ .ivu-input {
+      padding-right: 80px !important;
+    }
+  }
+  .case-name-hint {
+    position: absolute;
+    left: 236px;
+    fine-height: 36px;
+    font-size: 13px;
+    color: #4098ff;
+    cursor: pointer;
+  }
+  .case-line {
+    opacity: 0.1;
+    background: #4098ff;
+    width: 108px;
+    height: 8px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 22px;
+  }
+  .age-year {
+    width: 100px;
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    /deep/ .ivu-input-number {
+      border-radius: 4px 0 0 4px !important;
+    }
+  }
+  .age-month {
+    width: 100px;
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    /deep/ .ivu-input-number {
+      border-radius: 0 !important;
+      border-left: 0;
+      border-right: 0;
+    }
+  }
+  .age-day {
+    width: 100px;
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    /deep/ .ivu-input-number {
+      border-radius: 0 4px 4px 0 !important;
+    }
+  }
+  .age-hint {
+    width: 0;
+    position: absolute;
+    left: 76px;
+    font-size: 16px;
+    color: #474c63;
+  }
+  .case-end {
+    display: flex;
+    font-family: PingFangSC-Regular;
+    font-size: 16px;
+    color: #474c63;
+    letter-spacing: 0.93px;
+    margin-left: 112px;
+
+    /deep/ .ivu-input-number-input {
+      text-align: center;
+    }
+
+    .case-end-box {
+      display: flex;
+      margin-right: 20px;
+
+      .box-input-number {
+        width: 50px !important;
+        margin: 0 5px;
+      }
+    }
+  }
+  .case-btn {
+    width: 150px;
+    height: 38px;
+    margin: 40px auto 0 auto;
+  }
+}
+

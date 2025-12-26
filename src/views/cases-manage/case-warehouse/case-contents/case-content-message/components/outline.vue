@@ -1,0 +1,338 @@
+<template>
+    <Modal v-model="show" @on-cancel="handleCancel" :footer-hide="true" title="引用提纲" width="900">
+        <!-- <screen ref="screemframe" :typeArr="typeArr" :select2="select2" :selectSubjects="true" :select2_3="select3" @selectChange2="selectChange2" @selectChange3="selectChange3" @inputChange="inputChange" sizeTitle1="提纲数" placehodle="搜索用户名/姓名/手机号/提纲" :sizeNum1="total" @selectChange1="selectChange1"/> -->
+        <div class="screen">
+            <Select v-if="isSuper" @on-change="selectChange1" class="select-list" v-model="organization_id">
+                <Option v-for="(item,index) in select1" :value="item.id" :key="index">{{item.title}}</Option>
+            </Select>
+            <Select @on-change="selectChange3" class="select-list" v-model="dept">
+                <Option v-for="(item,index) in select3" :value="item.id" :key="index">{{item.title}}</Option>
+            </Select>
+            <Select @on-change="selectChange2" class="select-list" v-model="degree">
+                <Option v-for="(item,index) in select2" :value="item.id" :key="index">{{item.title}}</Option>
+            </Select>
+            <div class="screen_input1">
+                <Input style="width:300px;margin-left: 10px;" v-model="keyword" @on-change="inputChange()" placeholder="搜索用户名/姓名/手机号/提纲" />
+                <Icon type="md-search" slot="prefix"/>
+            </div>
+            <div class="number1">
+                <p>提纲数</p>
+                <span>{{total}}</span>
+            </div>
+        </div>
+        <div class="card">
+            <div v-for="(item, index) in dataList" :key="index" class="card-box" v-show="item.state == 3" :class="item.select ? 'select-box' : ''">
+                <div v-if="item.select" class="check-data">
+                    <Icon type="md-checkmark" color="#fff" size="20" style="transform: rotate(-45deg);margin-bottom: 2px;"/>
+                </div>
+                <div class="card-title">{{item.symptom}}</div>
+                <div class="card-degree" :style="{backgroundColor: decideDegree[+item.degree - 1].color}">{{decideDegree[+item.degree - 1].title}}</div>
+                <div class="card-content">
+                    <div>id: {{item.id}}</div>
+                    <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;margin-top: 6px;">诊断：{{setName(item.icd10_names)}}</div>
+                    <div style="display: flex; margin-top: 6px;">
+                        <div>机构：{{item.organization_name}}</div>
+                        <div style="margin: 0 8px;">|</div>
+                        <div>科室：{{changeDepName(item.dept_id)}}</div>
+                    </div>
+                    <div style="display: flex;margin-top: 6px;">
+                        <div>创建人：{{item.realname}}</div>
+                        <div style="margin: 0 8px;">|</div>
+                        <div>创建时间：{{item.create_time.slice(0, 10)}}</div>
+                    </div>
+                </div>
+                <div class="card-btn">
+                    <Button style="margin-right: 4px;" type="primary" ghost @click="handleCheck(item)">查看</Button>
+                    <Button type="primary" @click="handleSelect(item)">引用提纲</Button>
+                </div>
+            </div>
+        </div>
+        <page-list :current="current" :total="total" :page-size="pageSize" @page-list="pageList"/>
+        <!--        <div class="btn"><Button type="primary" style="width: 130px;" @click="handleClick">确认</Button></div>-->
+    </Modal>
+</template>
+
+<script>
+    import screen from 'components/ScreenFrame'
+    import pageList from 'components/Page'
+    import pageMixin from 'mix/pageMixins'
+    import postData from '../../../../../../api/postData'
+
+    export default {
+        components: {screen, pageList},
+        mixins: [pageMixin],
+        data() {
+            return {
+                typeArr: ['isSuper', 'select2', 'size1', 'input','select2_3'],
+                select2: [
+                    {title: '全部', id: 'all'},
+                    {title: '简单', id: 1},
+                    {title: '中等', id: 2},
+                    {title: '困难', id: 3},
+                ],
+                select1:[{id: "all", title: "全部难度" }],
+                select3:[{id: 'all', title: '全部科室'}],
+                show: false,
+                dataList: [],
+                outline: {},
+                degree: 'all',
+                keyword: '',
+                dept:'all',
+                organization_id:'all',
+                decideDegree: [
+                    {color: '#7ED321', title: '简单'},
+                    {color: '#4098ff', title: '中等'},
+                    {color: '#FD6C1E', title: '困难'},
+                ],
+                selectid:0
+            }
+        },
+        props: {
+            isShow: Boolean
+        },
+        watch: {
+            isShow(val) {
+                this.show = val
+            }
+        },
+        methods: {
+            changeDepName(ids){
+                for (let i = 0; i < this.select3.length; i++) {
+                    if (this.select3[i].id == ids) {
+                        return this.select3[i].title
+                    }
+                }
+            },
+            handleCancel() {
+                this.$emit('outline-cancel')
+            },
+            setName(val) {
+                let str = ''
+                if(val){
+                    JSON.parse(val).forEach(item => {
+                        str += str ? ',' + item : item
+                    })
+                }
+                return str
+            },
+            handleSelect(item) {
+                console.log(item);
+                this.selectid = item.id
+                this.dataList.forEach(it => {it.select = false})
+                item.select = true
+                this.$emit('outline_submit', item)
+                this.$forceUpdate()
+            },
+            handleClick() {
+                this.$emit('outline_submit', this.outline)
+            },
+            handleCheck(item) {
+                postData('/v1/outline/getoutlineDetail',{id:item.id}).then(res => {
+                    item.outline = res.data.outline
+                    sessionStorage.setItem('caseType', JSON.stringify('check'))
+                    sessionStorage.setItem('caseOutline', JSON.stringify(item))
+                    // this.$router.push({path: 'outline-content', query: {id: item.id || null}})
+                    window.open(`/dashboard/outline-content?id=${item.id || null}`)
+                })
+            },
+            selectChange2(val) {
+                this.degree = val
+                this.getList()
+            },
+            selectChange3(val) {
+                this.dept = val
+                // console.log(val);
+                // this.$refs.screemframe.valueSelect3 = this.dept
+                this.getList()
+            },
+            inputChange(val) {
+                // this.keyword = val
+                this.current = 1
+                this.getList()
+            },
+            selectChange1(val) {
+                this.organization_id = val
+                this.getList()
+            },
+            getList() {
+                //获取机构id1
+               let orgId =  JSON.parse(sessionStorage.getItem('PERSONALDETAILS')).organization_id ;
+                let data = {
+                    page_num: this.current,
+                    page_size: this.pageSize,
+                    organization_id: this.organization_id == "all" ? orgId : +this.organization_id,
+                    degree: this.degree == "all" ? null : this.degree,
+                    keyword: this.keyword,
+                    dept_id: this.dept == "all" ? null : this.dept,
+                    state:3
+                }
+                PostData('/v1/outline/getOutlineList', data).then(res => {
+                    if(res.res_code == 1) {
+                        this.dataList = res.data.list
+                        this.total = res.data.count
+                        let d = JSON.parse(sessionStorage.getItem("CaseContentMsg"));
+                        this.dataList.forEach(element => {
+                            if (this.selectid == element.id) {
+                                element.select = true
+                            }
+                            if (d) {
+                                if (d.outlineName) {
+                                    if (d.outlineName == element.symptom) {
+                                        element.select = true
+                                    }
+                                } else {
+                                    if (d.symptom == element.symptom) {
+                                        element.select = true
+                                    }
+                                }
+                            }
+                        });
+                    }
+                })
+            }
+        },
+        mounted() {
+            // this.organization_id = this.$config.getOrganizationId(),
+            this.pageSize = 6
+            PostData('/v1/common/getOrganizationList').then((res) => {
+                this.select1 = [{id: 'all', title: '全部机构'},...res.data]
+            })
+            PostData('/v1/common/getDeptList').then(res => {
+                this.select3 = [{id: 'all', title: '全部科室'},...res.data]
+            })
+            this.getList()
+        }
+    }
+</script>
+
+<style scoped lang="less">
+    .card{
+        display: flex;
+        flex-wrap: wrap;
+        // height: 600px;
+        overflow-y: auto;
+        align-items: self-start;
+        align-content: baseline;
+    }
+    .card-box{
+        width: 260px;
+        margin: 10px;
+        box-shadow: 3px 3px rgba(99,99,99,.3);
+        border: 1px solid #999;
+        height: 180px;
+        position: relative;
+        overflow: hidden;
+
+        &:hover{
+            .card-btn{
+                display: flex;
+            }
+        }
+    }
+    .check-data{
+        position: absolute;
+        right: -30px;
+        top: -30px;
+        background-color: #4098ff;
+        width: 60px;
+        height: 60px;
+        transform: rotate(45deg);
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+    }
+    .select-box{
+        border: 1px solid #4098ff;
+        box-shadow: 3px 3px rgba(64,152,255,.3);
+    }
+    .card-title{
+        background-color: #f0f0f7;
+        text-align: center;
+        font-size: 16px;
+        height: 28px;
+        line-height: 28px
+    }
+    .card-degree{
+        position: absolute;
+        top: 4px;
+        left: 2px;
+        color: #fff;
+        background-color:#4098ff;
+        padding: 0 2px;
+        border-radius: 4px;
+    }
+    .card-content{
+        padding: 6px;
+        display: flex;
+        flex-direction: column;
+        height: 152px;
+    }
+    .card-btn{
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        display: none;
+        background-color:#fff;
+    }
+    .btn{
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        margin-top: 40px;
+    }
+        .screen{
+        display: flex;
+        align-items: center;
+        background: #F0F0F7;
+        height: 66px;
+        .screen_input1{
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        .number1{
+            display: flex;
+            align-items: center;
+            margin-right: auto;
+            min-width: 150px;
+            p{
+                font-family: PingFangSC-Regular;
+                font-size: 16px;
+                color: #474C63;
+                letter-spacing: 0;
+                margin-left: 10px;
+            }
+            span{
+                font-family: PingFangSC-Regular;
+                font-size: 16px;
+                color: #4098FF;
+                letter-spacing: 0;
+                margin-left: 10px;
+            }
+        }
+        /deep/ .ivu-input{
+            border-radius: 100px !important;
+            padding-left: 40px;
+            font-size: 16px !important;
+        }
+        /deep/ .ivu-icon-md-search{
+            font-size: 20px;
+            position: absolute;
+            left: 25px;
+        }
+    }
+    .select-list{
+        width: 120px;
+        /* min-width: 200px; */
+        margin-left: 10px;
+        /deep/ .ivu-select-selection{
+            border-radius: 100px;
+        }
+        /deep/ .ivu-select-selected-value{
+            padding-left: 20px !important;
+        }
+        /deep/ .ivu-select-placeholder{
+            padding-left: 20px !important;
+        }
+    }
+</style>
